@@ -1,0 +1,53 @@
+{
+  "name": "nodejs-starter",
+  "version": "1.0.0",
+  "description": "A Node.js starter project",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "vite --port 3000 --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3",
+    "react-hot-toast": "^2.4.1",
+    "lucide-react": "^0.358.0",
+    "date-fns": "^3.3.1",
+    "firebase": "^10.8.0",
+    "firebase-admin": "^12.0.0",
+    "react-dropzone": "^14.2.3",
+    "chart.js": "^4.4.1",
+    "react-chartjs-2": "^5.2.0",
+    "@tremor/react": "^3.14.1",
+    "recharts": "^2.12.2",
+    "@headlessui/react": "^1.7.18",
+    "framer-motion": "^11.0.8",
+    "tailwind-merge": "^2.2.1",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/aspect-ratio": "^0.4.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.18",
+    "nodemon": "^3.1.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.5"
+  }
+}

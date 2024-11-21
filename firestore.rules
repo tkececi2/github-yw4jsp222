@@ -1,0 +1,96 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Temel fonksiyonlar
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'yonetici';
+    }
+    
+    function isTechnician() {
+      let user = get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid));
+      return isAuthenticated() && 
+        (user.data.rol == 'tekniker' || user.data.rol == 'muhendis');
+    }
+    
+    function isCustomer() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'musteri';
+    }
+    
+    function hasAccessToSaha(sahaId) {
+      let user = get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid));
+      return user.data.sahalar != null && sahaId in user.data.sahalar;
+    }
+
+    // Müşterinin arızaya erişim yetkisi kontrolü
+    function canCustomerAccessAriza(arizaData) {
+      return isCustomer() && hasAccessToSaha(arizaData.saha);
+    }
+
+    // Sadece yorum güncellemesi mi kontrolü
+    function isOnlyCommentUpdate(currentData, newData) {
+      let diff = newData.diff(currentData);
+      return diff.affectedKeys().hasOnly(['yorumlar', 'guncellenmeTarihi']);
+    }
+
+    // Kullanıcılar koleksiyonu
+    match /kullanicilar/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || request.auth.uid == userId;
+      allow create: if true; // Yeni kullanıcı kaydına izin ver
+    }
+    
+    // Sahalar koleksiyonu
+    match /sahalar/{sahaId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Arızalar koleksiyonu
+    match /arizalar/{arizaId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        isAdmin() || 
+        isTechnician() || 
+        resource.data.olusturanKisi == request.auth.uid ||
+        // Müşterinin kendi sahasındaki arızalara yorum yapabilmesi için
+        (canCustomerAccessAriza(resource.data) && isOnlyCommentUpdate(resource.data, request.resource.data))
+      );
+      allow delete: if isAdmin();
+    }
+    
+    // İstatistikler koleksiyonu
+    match /istatistikler/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isTechnician();
+    }
+    
+    // Performans koleksiyonu
+    match /performans/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isTechnician();
+    }
+    
+    // Raporlar koleksiyonu
+    match /raporlar/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isTechnician();
+    }
+    
+    // Bildirimler koleksiyonu
+    match /bildirimler/{bildirimId} {
+      allow read: if isAuthenticated() && (
+        isAdmin() || 
+        resource.data.kullaniciId == request.auth.uid
+      );
+      allow write: if isAuthenticated();
+    }
+  }
+}
